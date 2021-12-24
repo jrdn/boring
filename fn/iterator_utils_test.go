@@ -11,21 +11,21 @@ import (
 func TestCollect(t *testing.T) {
 	input := []string{"foo", "bar", "baz", "quux"}
 
-	result := Collect[string](c.NewList(input...))
+	result := Collect[string](c.NewList(input))
 
 	require.NotNil(t, result)
 	require.NotEmpty(t, result)
-	for i, r := range result {
+	for i, r := range result.Get() {
 		assert.Equal(t, input[i], r)
 	}
 }
 
 func TestMap(t *testing.T) {
 	data := []string{"foo", "bar", "baz", "quux"}
-	lst := c.NewList(data...)
+	lst := c.NewList(data)
 	results := Collect[int](Map[string, int](func(x string) int {
 		return len(x)
-	}, lst))
+	}, lst)).Get()
 	require.NotNil(t, results)
 	require.NotEmpty(t, results)
 
@@ -36,7 +36,7 @@ func TestMap(t *testing.T) {
 
 func TestReduce(t *testing.T) {
 	expected := 1 + 2 + 3 + 4 + 5
-	lst := c.NewList([]int{1, 2, 3, 4, 5}...)
+	lst := c.NewList([]int{1, 2, 3, 4, 5})
 	result := Reduce[int](func(a, b int) int {
 		return a + b
 	}, lst)
@@ -50,25 +50,21 @@ func TestFilter(t *testing.T) {
 
 	result := Collect(Filter[int](func(x int) bool {
 		return x%2 == 0
-	}, c.NewList(input...)))
+	}, c.NewList(input))).Get()
 
-	for i, r := range result {
-		assert.Equal(t, expected[i], r)
-	}
+	assert.Equal(t, expected, result)
 }
 
 func TestChain(t *testing.T) {
 	expected := []int{0, 1, 2, 3, 4}
 
 	result := Collect(Chain[int](
-		c.NewList([]int{0, 1, 2}...),
-		c.NewSet([]int{3, 4}...),
-	))
+		c.NewList([]int{0, 1, 2}),
+		c.NewList([]int{3, 4}),
+	)).Get()
 
 	require.NotNil(t, result)
 	require.NotEmpty(t, result)
 
-	for i, r := range result {
-		assert.Equal(t, expected[i], r)
-	}
+	assert.Equal(t, expected, result)
 }

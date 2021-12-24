@@ -9,7 +9,7 @@ import (
 )
 
 func TestNewMap(t *testing.T) {
-	m := NewMap[string, string](map[string]string{"foo": "bar", "baz": "quux"})
+	m := NewMap[string, string](map[string]string{"foo": "bar", "baz": "quux"}, map[string]string{"asdf": "qwer"})
 	require.NotNil(t, m)
 }
 

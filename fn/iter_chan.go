@@ -11,6 +11,7 @@ type chanIterator[T any] struct {
 	c <-chan T
 }
 
+// Iter iterates the channel
 func (c *chanIterator[T]) Iter() <-chan T {
 	retChan := make(chan T)
 	go func() {

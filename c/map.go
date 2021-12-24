@@ -1,5 +1,6 @@
 package c
 
+// NewMap creates a new Map
 func NewMap[K comparable, V any](data ...map[K]V) *Map[K, V] {
 	m := &Map[K, V]{
 		x: make(map[K]V),
@@ -14,6 +15,7 @@ func NewMap[K comparable, V any](data ...map[K]V) *Map[K, V] {
 	return m
 }
 
+// Map is an iterable version of a go map
 type Map[K comparable, V any] struct {
 	x map[K]V
 }
@@ -32,4 +34,9 @@ func (m Map[K, V]) Iter() <-chan Pair[K, V] {
 		close(iterChan)
 	}()
 	return iterChan
+}
+
+func (m Map[K, V]) Get(key K) (V, bool) {
+	ret, ok := m.x[key]
+	return ret, ok
 }

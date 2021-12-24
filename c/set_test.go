@@ -1,23 +1,24 @@
 package c
 
 import (
-	"fmt"
 	"testing"
 
-	"github.com/jrdn/boring/iface"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSet_Iter(t *testing.T) {
-	s := NewSet[string]()
-	s.Add("foo")
-	s.Add("bar")
-
-	var iter iface.Iterable[string] = s
-	for item := range iter.Iter() {
-		fmt.Println(item)
+	results := make(map[string]struct{})
+	for item := range NewSet[string]([]string{"asdf", "quux"}).Iter() {
+		results[item] = struct{}{}
 	}
+
+	assert.Contains(t, results, "asdf")
+	assert.Contains(t, results, "quux")
 }
 
 func TestSet_Contains(t *testing.T) {
-
+	s := NewSet[string]([]string{"asdf", "quux"})
+	assert.True(t, s.Contains("asdf"))
+	assert.True(t, s.Contains("quux"))
+	assert.False(t, s.Contains("hello world"))
 }
