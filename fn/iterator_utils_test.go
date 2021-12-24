@@ -15,7 +15,7 @@ func TestCollect(t *testing.T) {
 
 	require.NotNil(t, result)
 	require.NotEmpty(t, result)
-	for i, r := range result.Get() {
+	for i, r := range result.GetSlice() {
 		assert.Equal(t, input[i], r)
 	}
 }
@@ -25,7 +25,7 @@ func TestMap(t *testing.T) {
 	lst := c.NewList(data)
 	results := Collect[int](Map[string, int](func(x string) int {
 		return len(x)
-	}, lst)).Get()
+	}, lst)).GetSlice()
 	require.NotNil(t, results)
 	require.NotEmpty(t, results)
 
@@ -50,7 +50,7 @@ func TestFilter(t *testing.T) {
 
 	result := Collect(Filter[int](func(x int) bool {
 		return x%2 == 0
-	}, c.NewList(input))).Get()
+	}, c.NewList(input))).GetSlice()
 
 	assert.Equal(t, expected, result)
 }
@@ -61,7 +61,7 @@ func TestChain(t *testing.T) {
 	result := Collect(Chain[int](
 		c.NewList([]int{0, 1, 2}),
 		c.NewList([]int{3, 4}),
-	)).Get()
+	)).GetSlice()
 
 	require.NotNil(t, result)
 	require.NotEmpty(t, result)

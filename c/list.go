@@ -14,12 +14,17 @@ type List[T any] struct {
 	x []T
 }
 
-// Get the slice that this List is wrapping
-func (l *List[T]) Get() []T {
+// Get an item from the List
+func (l *List[T]) Get(index int) T {
+	return l.x[index]
+}
+
+// GetSlice the slice that this List is wrapping
+func (l *List[T]) GetSlice() []T {
 	return l.x
 }
 
-// Iter returns a channel which can be used with range to loop through the iterator
+// Iter allows the List to be an iface.Iterable
 func (l *List[T]) Iter() <-chan T {
 	iterChan := make(chan T)
 	go func() {

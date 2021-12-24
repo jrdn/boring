@@ -4,3 +4,7 @@ package iface
 type Iterable[T any] interface {
 	Iter() <-chan T
 }
+
+type Lengthable interface {
+	Len() int
+}
