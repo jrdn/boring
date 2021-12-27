@@ -1,21 +1,21 @@
 package fn
 
 import (
-	"github.com/jrdn/boring/c"
-	"github.com/jrdn/boring/iface"
+	"github.com/jrdn/boring/ds"
+	"github.com/jrdn/boring/types"
 )
 
 // Collect gathers all the values from an iterable and converts it to a List
-func Collect[T any](iter ...iface.Iterable[T]) *c.List[T] {
+func Collect[T any](iter ...types.Iterable[T]) *ds.List[T] {
 	var ret []T
 	for item := range Chain(iter...).Iter() {
 		ret = append(ret, item)
 	}
-	return c.NewList[T](ret)
+	return ds.NewList[T](ret)
 }
 
 // CollectN gathers the first N values from an iterable and adds it to a List until the list contains
-func CollectN[T any](n int, iter ...iface.Iterable[T]) *c.List[T] {
+func CollectN[T any](n int, iter ...types.Iterable[T]) *ds.List[T] {
 	var ret []T
 
 	counter := 0
@@ -26,13 +26,13 @@ func CollectN[T any](n int, iter ...iface.Iterable[T]) *c.List[T] {
 			break
 		}
 	}
-	return c.NewList[T](ret)
+	return ds.NewList[T](ret)
 }
 
 type CollectUntilDecider[T any] func(item T) (stopIteration bool)
 
 // CollectUntil gathers values from iterables into a List until a provided function returns true
-func CollectUntil[T any](fn CollectUntilDecider[T], iter ...iface.Iterable[T]) *c.List[T] {
+func CollectUntil[T any](fn CollectUntilDecider[T], iter ...types.Iterable[T]) *ds.List[T] {
 	var ret []T
 	for item := range Chain(iter...).Iter() {
 		if stopIteration := fn(item); stopIteration {
@@ -40,11 +40,11 @@ func CollectUntil[T any](fn CollectUntilDecider[T], iter ...iface.Iterable[T]) *
 		}
 		ret = append(ret, item)
 	}
-	return c.NewList[T](ret)
+	return ds.NewList[T](ret)
 }
 
 // Map applies a function to a number of iterators and produces an iterable of the function's return values
-func Map[T, R any](fn func(T) R, iterators ...iface.Iterable[T]) iface.Iterable[R] {
+func Map[T, R any](fn func(T) R, iterators ...types.Iterable[T]) types.Iterable[R] {
 	c := make(chan R)
 
 	go func() {
@@ -66,7 +66,7 @@ func Map[T, R any](fn func(T) R, iterators ...iface.Iterable[T]) iface.Iterable[
 //
 // this implies that the iterable must return at least two items for the function to be called.
 // reducing an iterable that only returns one value results in that value, regardless of the function
-func Reduce[T any](fn func(a, b T) T, data ...iface.Iterable[T]) T {
+func Reduce[T any](fn func(a, b T) T, data ...types.Iterable[T]) T {
 	buf := make([]T, 2)
 	i := 0
 	for item := range Chain(data...).Iter() {
@@ -86,7 +86,7 @@ func Reduce[T any](fn func(a, b T) T, data ...iface.Iterable[T]) T {
 
 // Filter applies a function to an iterator and returns an iterable that contains only the values where the function
 // returns true
-func Filter[T any](fn func(T) bool, data ...iface.Iterable[T]) iface.Iterable[T] {
+func Filter[T any](fn func(T) bool, data ...types.Iterable[T]) types.Iterable[T] {
 	c := make(chan T)
 	go func() {
 		for item := range Chain(data...).Iter() {
@@ -101,7 +101,7 @@ func Filter[T any](fn func(T) bool, data ...iface.Iterable[T]) iface.Iterable[T]
 
 // Chain stitches together multiple iterators into one stream of values,
 // where the first iterator is consumed entirely, then the second, and so on
-func Chain[T any](iterables ...iface.Iterable[T]) iface.Iterable[T] {
+func Chain[T any](iterables ...types.Iterable[T]) types.Iterable[T] {
 	c := make(chan T)
 	go func() {
 		for _, iterable := range iterables {

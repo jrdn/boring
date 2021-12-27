@@ -3,7 +3,7 @@ package fn
 import (
 	"testing"
 
-	"github.com/jrdn/boring/c"
+	"github.com/jrdn/boring/ds"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -11,7 +11,7 @@ import (
 func TestCollect(t *testing.T) {
 	input := []string{"foo", "bar", "baz", "quux"}
 
-	result := Collect[string](c.NewList(input))
+	result := Collect[string](ds.NewList(input))
 
 	require.NotNil(t, result)
 	require.NotEmpty(t, result)
@@ -22,7 +22,7 @@ func TestCollect(t *testing.T) {
 
 func TestMap(t *testing.T) {
 	data := []string{"foo", "bar", "baz", "quux"}
-	lst := c.NewList(data)
+	lst := ds.NewList(data)
 	results := Collect[int](Map[string, int](func(x string) int {
 		return len(x)
 	}, lst)).GetSlice()
@@ -36,7 +36,7 @@ func TestMap(t *testing.T) {
 
 func TestReduce(t *testing.T) {
 	expected := 1 + 2 + 3 + 4 + 5
-	lst := c.NewList([]int{1, 2, 3, 4, 5})
+	lst := ds.NewList([]int{1, 2, 3, 4, 5})
 	result := Reduce[int](func(a, b int) int {
 		return a + b
 	}, lst)
@@ -50,7 +50,7 @@ func TestFilter(t *testing.T) {
 
 	result := Collect(Filter[int](func(x int) bool {
 		return x%2 == 0
-	}, c.NewList(input))).GetSlice()
+	}, ds.NewList(input))).GetSlice()
 
 	assert.Equal(t, expected, result)
 }
@@ -59,8 +59,8 @@ func TestChain(t *testing.T) {
 	expected := []int{0, 1, 2, 3, 4}
 
 	result := Collect(Chain[int](
-		c.NewList([]int{0, 1, 2}),
-		c.NewList([]int{3, 4}),
+		ds.NewList([]int{0, 1, 2}),
+		ds.NewList([]int{3, 4}),
 	)).GetSlice()
 
 	require.NotNil(t, result)

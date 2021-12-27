@@ -1,4 +1,4 @@
-package c
+package ds
 
 // NewList creates a new List, which is an iterable analogous to a slice
 func NewList[T any](data ...[]T) *List[T] {

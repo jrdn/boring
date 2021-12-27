@@ -1,4 +1,4 @@
-package c
+package ds
 
 // Pair, Triplet, and Quadruplet exist as an easy way to return an object with multiple items of (potentially) different
 // types. This is useful for things like Map iterators, where the the key and value are returned in a Pair

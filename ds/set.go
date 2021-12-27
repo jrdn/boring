@@ -1,4 +1,4 @@
-package c
+package ds
 
 // NewSet creates a new Set
 func NewSet[T comparable](data ...[]T) *Set[T] {

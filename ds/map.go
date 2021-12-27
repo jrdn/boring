@@ -1,6 +1,8 @@
-package c
+package ds
 
-import "github.com/jrdn/boring/iface"
+import (
+	"github.com/jrdn/boring/types"
+)
 
 // NewMap creates a new Map
 func NewMap[K comparable, V any](data ...map[K]V) *Map[K, V] {
@@ -55,8 +57,8 @@ func (m Map[K, V]) Len() int {
 	return len(m.x)
 }
 
-var _ iface.Iterable[Pair[string, int]] = &Map[string, int]{}
-var _ iface.Lengthable = &Map[string, int]{}
+var _ types.Iterable[Pair[string, int]] = &Map[string, int]{}
+var _ types.Lengthable = &Map[string, int]{}
 
 // NewOrderedMap creates a new ordered map
 func NewOrderedMap[K comparable, V any]() *OrderedMap[K, V] {
@@ -93,5 +95,5 @@ func (om *OrderedMap[K, V]) Iter() <-chan Pair[K, V] {
 	return iterChan
 }
 
-var _ iface.Iterable[Pair[string, int]] = &OrderedMap[string, int]{}
-var _ iface.Lengthable = &OrderedMap[string, int]{}
+var _ types.Iterable[Pair[string, int]] = &OrderedMap[string, int]{}
+var _ types.Lengthable = &OrderedMap[string, int]{}

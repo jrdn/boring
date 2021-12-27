@@ -1,4 +1,4 @@
-package iface
+package types
 
 // Iterable is a type which implements the boring iterator protocol
 type Iterable[T any] interface {

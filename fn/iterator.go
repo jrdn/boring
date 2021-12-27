@@ -1,13 +1,15 @@
 package fn
 
-import "github.com/jrdn/boring/iface"
+import (
+	"github.com/jrdn/boring/types"
+)
 
 type IteratorFunc[T any] func() (retVal T, stopIteration bool)
 
 // Iterator turns a function into an iterator
 // When a new value is needed from the iterator, the function is called to produce it
 // It will continue to iterate over the function results in this way while the 2nd return value stays false.
-func Iterator[T any](fn IteratorFunc[T]) iface.Iterable[T] {
+func Iterator[T any](fn IteratorFunc[T]) types.Iterable[T] {
 	return &fnIter[T]{fn: fn}
 }
 

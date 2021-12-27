@@ -1,10 +1,10 @@
-package c
+package ds
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/jrdn/boring/iface"
+	"github.com/jrdn/boring/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -23,7 +23,7 @@ func TestMap_Contains(t *testing.T) {
 
 func TestMap_Iter(t *testing.T) {
 	m := NewMap[string, string](map[string]string{"foo": "bar", "baz": "quux"})
-	var iter iface.Iterable[Pair[string, string]] = m
+	var iter types.Iterable[Pair[string, string]] = m
 	for item := range iter.Iter() {
 		fmt.Println(item)
 	}

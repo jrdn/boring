@@ -1,9 +1,11 @@
 package fn
 
-import "github.com/jrdn/boring/iface"
+import (
+	"github.com/jrdn/boring/types"
+)
 
 // IterableChannel wraps a channel in an iterator
-func IterableChannel[T any](c <-chan T) iface.Iterable[T] {
+func IterableChannel[T any](c <-chan T) types.Iterable[T] {
 	return &chanIterator[T]{c: c}
 }
 
