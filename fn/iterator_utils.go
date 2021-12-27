@@ -54,7 +54,7 @@ func Map[T, R any](fn func(T) R, iterators ...types.Iterable[T]) types.Iterable[
 		}
 		close(c)
 	}()
-	return IterableChannel(c)
+	return ChanIterator(c)
 }
 
 // Reduce applies a function cumulatively to values from the iterable so the return value of one call is passed to
@@ -96,7 +96,7 @@ func Filter[T any](fn func(T) bool, data ...types.Iterable[T]) types.Iterable[T]
 		}
 		close(c)
 	}()
-	return IterableChannel[T](c)
+	return ChanIterator[T](c)
 }
 
 // Chain stitches together multiple iterators into one stream of values,
@@ -111,5 +111,65 @@ func Chain[T any](iterables ...types.Iterable[T]) types.Iterable[T] {
 		}
 		close(c)
 	}()
-	return IterableChannel[T](c)
+	return ChanIterator[T](c)
+}
+
+// Tee makes two iterators which operate together, so an item must be read from both before either progresses to the
+// next item
+func Tee[T any](iter types.Iterable[T]) (types.Iterable[T], types.Iterable[T]) {
+	chan1 := make(chan T)
+	chan2 := make(chan T)
+
+	go func() {
+		for item := range iter.Iter() {
+			chan1 <- item
+			chan2 <- item
+		}
+		close(chan1)
+		close(chan2)
+	}()
+
+	return ChanIterator[T](chan1), ChanIterator[T](chan2)
+}
+
+// Repeat a value infinitely
+func Repeat[T any](element T) types.Iterable[T] {
+	return FuncIterator(func() (T, bool) {
+		return element, false
+	})
+}
+
+// RepeatTimes repeats a value a given number of times
+func RepeatTimes[T any](element T, times int) types.Iterable[T] {
+	counter := 0
+	return FuncIterator(func() (T, bool) {
+		if counter < times-1 {
+			counter++
+			return element, false
+		}
+		counter++
+		return element, true
+	})
+}
+
+// Pairwise consumes an iterator and returns them two at a times
+func Pairwise[T any](iter types.Iterable[T]) types.Iterable[ds.Pair[T, T]] {
+	iterChan := make(chan ds.Pair[T, T])
+
+	source := iter.Iter()
+
+	go func() {
+		for {
+			first, more := <-source
+			if !more {
+				break
+			}
+
+			second := <-source
+			iterChan <- ds.NewPair[T, T](first, second)
+		}
+		close(iterChan)
+	}()
+
+	return ChanIterator[ds.Pair[T, T]](iterChan)
 }

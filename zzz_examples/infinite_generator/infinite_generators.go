@@ -20,7 +20,7 @@ func main() {
 	}
 
 	// wrap the generator function in an iterator
-	iter := fn.Iterator(genFunc)
+	iter := fn.FuncIterator(genFunc)
 
 	// filter values from the stream so it's just even numbers
 	filteredIter := fn.Filter(func(input int) bool {

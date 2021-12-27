@@ -68,3 +68,41 @@ func TestChain(t *testing.T) {
 
 	assert.Equal(t, expected, result)
 }
+
+func TestTee(t *testing.T) {
+	first, second := Tee[string](ds.NewList[string]([]string{"foo", "bar", "baz"}))
+
+	firstIter := first.Iter()
+	secondIter := second.Iter()
+
+	for firstItem := range firstIter {
+		secondItem := <-secondIter
+		assert.Equal(t, firstItem, secondItem)
+	}
+}
+
+func TestRepeat(t *testing.T) {
+	result := CollectN(3, Repeat("foo")).GetSlice()
+	assert.Equal(t, []string{"foo", "foo", "foo"}, result)
+}
+
+func TestRepeatTimes(t *testing.T) {
+	result := Collect(RepeatTimes("foo", 5)).GetSlice()
+	assert.Len(t, result, 5)
+	assert.Equal(t, "foo", result[0])
+}
+
+func TestPairwise(t *testing.T) {
+	expected := [][]string{
+		{"foo", "bar"},
+		{"baz", "quux"},
+	}
+	pairwiseIter := Pairwise[string](ds.NewList[string]([]string{"foo", "bar", "baz", "quux"}))
+
+	i := 0
+	for pair := range pairwiseIter.Iter() {
+		assert.Equal(t, expected[i][0], pair.First())
+		assert.Equal(t, expected[i][1], pair.Second())
+		i++
+	}
+}

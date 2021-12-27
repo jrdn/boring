@@ -8,7 +8,7 @@ import (
 
 func TestIterator(t *testing.T) {
 	counter := 0
-	result := Collect[int](Iterator[int](func() (int, bool) {
+	result := Collect[int](FuncIterator[int](func() (int, bool) {
 		for counter < 10 {
 			val := counter
 			counter = counter + 1
