@@ -6,6 +6,7 @@ import (
 )
 
 func JSONResponse(status int, val any, w http.ResponseWriter) {
+	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(status)
 	out, _ := json.Marshal(val)
 	_, _ = w.Write(out)

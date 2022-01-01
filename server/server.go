@@ -11,29 +11,38 @@ import (
 	"go.uber.org/zap"
 )
 
-func New(listen string) *Server {
-	l := log.GetLogger("server")
-	l.Info("starting server", zap.String("server_addr", listen))
+func New(listen string, serverLogger *zap.Logger, requestLogger *zap.Logger) *Server {
+	if serverLogger == nil {
+		serverLogger = log.GetLogger("server")
+		serverLogger.Info("starting server", zap.String("server_addr", listen))
+	}
+
+	if requestLogger == nil {
+		requestLogger = serverLogger.Named("request")
+	}
 
 	srv := &http.Server{
-		Addr:    listen,
-		Handler: chi.NewRouter(),
+		Addr: listen,
 	}
 
 	server := &Server{
-		HttpServer: srv,
-		Logger:     l,
+		HttpServer:    srv,
+		Logger:        serverLogger,
+		RequestLogger: requestLogger,
+		Router:        chi.NewRouter(),
 	}
 
-	server.Middleware(middleware.LoggingMiddleware(l))
+	server.Middleware(middleware.LoggingMiddleware(requestLogger))
+
 	return server
 }
 
 type Server struct {
-	HttpServer   *http.Server
-	Router       *chi.Mux
-	StopCallback func(*zap.Logger)
-	Logger       *zap.Logger
+	HttpServer    *http.Server
+	StopCallback  func(*zap.Logger)
+	Logger        *zap.Logger
+	RequestLogger *zap.Logger
+	Router        chi.Router
 }
 
 func (s *Server) Mount(pattern string, handler http.Handler) {
@@ -41,10 +50,12 @@ func (s *Server) Mount(pattern string, handler http.Handler) {
 }
 
 func (s *Server) Middleware(middleware func(http.Handler) http.Handler) {
-	s.Router.With(middleware)
+	s.Router = s.Router.With(middleware)
 }
 
 func (s *Server) Run() {
+	s.HttpServer.Handler = s.Router
+
 	go func() {
 		_ = s.HttpServer.ListenAndServe()
 	}()
