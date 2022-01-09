@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestIterator(t *testing.T) {
+func TestFuncIterator(t *testing.T) {
 	counter := 0
 	result := Collect[int](FuncIterator[int](func() (int, bool) {
 		for counter < 10 {

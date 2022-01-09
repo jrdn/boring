@@ -6,9 +6,10 @@ import (
 
 type IteratorFunc[T any] func() (retVal T, stopIteration bool)
 
-// FuncIterator turns a function into an iterator
-// When a new value is needed from the iterator, the function is called to produce it
-// It will continue to iterate over the function results in this way while the 2nd return value stays false.
+// FuncIterator turns a function into an iterator When a new value is needed
+// from the iterator, the function is called to produce it. will continue to
+// iterate over the function results in this way while the 2nd return value
+// stays false.
 func FuncIterator[T any](fn IteratorFunc[T]) types.Iterable[T] {
 	return &fnIter[T]{fn: fn}
 }
