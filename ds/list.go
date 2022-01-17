@@ -28,10 +28,10 @@ func (l *List[T]) GetSlice() []T {
 func (l *List[T]) Iter() <-chan T {
 	iterChan := make(chan T)
 	go func() {
+		defer close(iterChan)
 		for _, item := range l.x {
 			iterChan <- item
 		}
-		close(iterChan)
 	}()
 	return iterChan
 }

@@ -63,13 +63,13 @@ func (ll *LinkedList[T]) Get(index int) (T, bool) {
 func (ll *LinkedList[T]) Iter() <-chan T {
 	retChan := make(chan T)
 	go func() {
+		defer close(retChan)
 		n := ll.head
 		for n != nil {
 			val := n.val
 			n = n.next
 			retChan <- val
 		}
-		close(retChan)
 	}()
 	return retChan
 }

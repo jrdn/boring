@@ -106,3 +106,20 @@ func TestPairwise(t *testing.T) {
 		i++
 	}
 }
+
+func TestZip(t *testing.T) {
+	expected := [][]string{
+		{"foo", "bar"},
+		{"baz", "quux"},
+	}
+
+	first := ds.NewList[string]([]string{"foo", "baz"})
+	second := ds.NewList[string]([]string{"bar", "quux", "hello world"})
+	i := 0
+	for pair := range Zip[string, string](first, second).Iter() {
+		assert.Equal(t, expected[i][0], pair.First())
+		assert.Equal(t, expected[i][1], pair.Second())
+		i++
+	}
+
+}

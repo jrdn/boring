@@ -34,10 +34,10 @@ func (m Map[K, V]) Contains(key K) bool {
 func (m Map[K, V]) Iter() <-chan Pair[K, V] {
 	iterChan := make(chan Pair[K, V])
 	go func() {
+		defer close(iterChan)
 		for k, v := range m.x {
 			iterChan <- NewPair[K, V](k, v)
 		}
-		close(iterChan)
 	}()
 	return iterChan
 }
@@ -86,6 +86,8 @@ func (om *OrderedMap[K, V]) Append(key K, value V) bool {
 func (om *OrderedMap[K, V]) Iter() <-chan Pair[K, V] {
 	iterChan := make(chan Pair[K, V])
 	go func() {
+		defer close(iterChan)
+
 		for _, k := range om.order {
 			v := om.x[k]
 			iterChan <- NewPair[K, V](k, v)

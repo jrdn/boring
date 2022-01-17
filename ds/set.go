@@ -44,10 +44,10 @@ func (s *Set[T]) Slice() []T {
 func (s *Set[T]) Iter() <-chan T {
 	iterChan := make(chan T)
 	go func(resultChan chan T, data map[T]struct{}) {
+		defer close(iterChan)
 		for item := range data {
 			resultChan <- item
 		}
-		close(iterChan)
 	}(iterChan, s.x)
 	return iterChan
 }

@@ -48,11 +48,11 @@ func Map[T, R any](fn func(T) R, iterators ...types.Iterable[T]) types.Iterable[
 	c := make(chan R)
 
 	go func() {
+		defer close(c)
 		chain := Chain[T](iterators...)
 		for item := range chain.Iter() {
 			c <- fn(item)
 		}
-		close(c)
 	}()
 	return ChanIterator(c)
 }
@@ -89,12 +89,12 @@ func Reduce[T any](fn func(a, b T) T, data ...types.Iterable[T]) T {
 func Filter[T any](fn func(T) bool, data ...types.Iterable[T]) types.Iterable[T] {
 	c := make(chan T)
 	go func() {
+		defer close(c)
 		for item := range Chain(data...).Iter() {
 			if fn(item) {
 				c <- item
 			}
 		}
-		close(c)
 	}()
 	return ChanIterator[T](c)
 }
@@ -104,12 +104,12 @@ func Filter[T any](fn func(T) bool, data ...types.Iterable[T]) types.Iterable[T]
 func Chain[T any](iterables ...types.Iterable[T]) types.Iterable[T] {
 	c := make(chan T)
 	go func() {
+		defer close(c)
 		for _, iterable := range iterables {
 			for item := range iterable.Iter() {
 				c <- item
 			}
 		}
-		close(c)
 	}()
 	return ChanIterator[T](c)
 }
@@ -121,12 +121,12 @@ func Tee[T any](iter types.Iterable[T]) (types.Iterable[T], types.Iterable[T]) {
 	chan2 := make(chan T)
 
 	go func() {
+		defer close(chan1)
+		defer close(chan2)
 		for item := range iter.Iter() {
 			chan1 <- item
 			chan2 <- item
 		}
-		close(chan1)
-		close(chan2)
 	}()
 
 	return ChanIterator[T](chan1), ChanIterator[T](chan2)
@@ -152,6 +152,30 @@ func RepeatTimes[T any](element T, times int) types.Iterable[T] {
 	})
 }
 
+// Zip consumes two iterators and joins them into a Pair
+// it continues iterating until the shortest iterator is exhausted.
+func Zip[A, B any](a types.Iterable[A], b types.Iterable[B]) types.Iterable[ds.Pair[A, B]] {
+	result := make(chan ds.Pair[A, B])
+	aIter := a.Iter()
+	bIter := b.Iter()
+	// TODO well this will leak a goroutine every time the iterators are of unequal length
+	go func() {
+		defer close(result)
+		for {
+			x, ok := <-aIter
+			if !ok {
+				break
+			}
+			y, ok := <-bIter
+			if !ok {
+				break
+			}
+			result <- ds.NewPair[A, B](x, y)
+		}
+	}()
+	return ChanIterator[ds.Pair[A, B]](result)
+}
+
 // Pairwise consumes an iterator and returns them two at a times
 func Pairwise[T any](iter types.Iterable[T]) types.Iterable[ds.Pair[T, T]] {
 	iterChan := make(chan ds.Pair[T, T])
@@ -159,6 +183,7 @@ func Pairwise[T any](iter types.Iterable[T]) types.Iterable[ds.Pair[T, T]] {
 	source := iter.Iter()
 
 	go func() {
+		defer close(iterChan)
 		for {
 			first, more := <-source
 			if !more {
@@ -168,7 +193,6 @@ func Pairwise[T any](iter types.Iterable[T]) types.Iterable[ds.Pair[T, T]] {
 			second := <-source
 			iterChan <- ds.NewPair[T, T](first, second)
 		}
-		close(iterChan)
 	}()
 
 	return ChanIterator[ds.Pair[T, T]](iterChan)
