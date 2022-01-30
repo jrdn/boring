@@ -3,7 +3,6 @@ package ds
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,13 +17,13 @@ func TestNewLinkedList(t *testing.T) {
 	}
 }
 
-func TestLinkedList_Iter(t *testing.T) {
-	expected := []string{"foo", "bar", "baz", "quux"}
-	ll := NewLinkedList[string](expected)
-
-	i := 0
-	for item := range ll.Iter() {
-		assert.Equal(t, expected[i], item)
-		i++
-	}
-}
+// func TestLinkedList_Iter(t *testing.T) {
+// 	expected := []string{"foo", "bar", "baz", "quux"}
+// 	ll := NewLinkedList[string](expected)
+//
+// 	i := 0
+// 	for item := range ll.Iter() {
+// 		assert.Equal(t, expected[i], item)
+// 		i++
+// 	}
+// }

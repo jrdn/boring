@@ -1,5 +1,7 @@
 package ds
 
+import "github.com/jrdn/boring/iterator"
+
 // NewList creates a new List, which is an iterable analogous to a slice
 func NewList[T any](data ...[]T) *List[T] {
 	l := &List[T]{}
@@ -25,13 +27,11 @@ func (l *List[T]) GetSlice() []T {
 }
 
 // Iter allows the List to be an iface.Iterable
-func (l *List[T]) Iter() <-chan T {
-	iterChan := make(chan T)
-	go func() {
-		for _, item := range l.x {
-			iterChan <- item
-		}
-		close(iterChan)
-	}()
-	return iterChan
+func (l *List[T]) Iter() iterator.Iterable[T] {
+	i := 0
+	return iterator.NewIterator[T](func() T {
+		val := l.Get(i)
+		i++
+		return val
+	})
 }

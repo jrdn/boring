@@ -1,5 +1,7 @@
 package ds
 
+import "github.com/jrdn/boring/iterator"
+
 // NewSet creates a new Set
 func NewSet[T comparable](data ...[]T) *Set[T] {
 	s := &Set[T]{
@@ -41,13 +43,18 @@ func (s *Set[T]) Slice() []T {
 }
 
 // Iter allows the set to be an iface.Iterable
-func (s *Set[T]) Iter() <-chan T {
-	iterChan := make(chan T)
-	go func(resultChan chan T, data map[T]struct{}) {
-		for item := range data {
-			resultChan <- item
-		}
-		close(iterChan)
-	}(iterChan, s.x)
-	return iterChan
+func (s *Set[T]) Iter() iterator.Iterable[T] {
+	var zero T
+	return iterator.NewIterator[T](func() T {
+		return zero
+	})
+
+	// iterChan := make(chan T)
+	// go func(resultChan chan T, data map[T]struct{}) {
+	// 	for item := range data {
+	// 		resultChan <- item
+	// 	}
+	// 	close(iterChan)
+	// }(iterChan, s.x)
+	// return iterChan
 }

@@ -1,8 +1,7 @@
 package types
 
-// Iterable is a type which implements the boring iterator protocol
-type Iterable[T any] interface {
-	Iter() <-chan T
+type Container[T any] interface {
+	Contains(other T) bool
 }
 
 type Lengthable interface {

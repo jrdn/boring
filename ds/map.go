@@ -1,7 +1,7 @@
 package ds
 
 import (
-	"github.com/jrdn/boring/types"
+	"github.com/jrdn/boring/iterator"
 )
 
 // NewMap creates a new Map
@@ -31,15 +31,14 @@ func (m Map[K, V]) Contains(key K) bool {
 }
 
 // Iter allows the Map to be an iface.Iterable
-func (m Map[K, V]) Iter() <-chan Pair[K, V] {
-	iterChan := make(chan Pair[K, V])
-	go func() {
-		for k, v := range m.x {
-			iterChan <- NewPair[K, V](k, v)
-		}
-		close(iterChan)
-	}()
-	return iterChan
+func (m Map[K, V]) Iter() iterator.Iterable[Pair[K, V]] {
+	data := make([]Pair[K, V], len(m.x))
+	i := 0
+	for key, val := range m.x {
+		data[i] = NewPair[K, V](key, val)
+		i++
+	}
+	return NewList(data).Iter()
 }
 
 // Get a value from the map
@@ -56,9 +55,6 @@ func (m Map[K, V]) GetMap() map[K]V {
 func (m Map[K, V]) Len() int {
 	return len(m.x)
 }
-
-var _ types.Iterable[Pair[string, int]] = &Map[string, int]{}
-var _ types.Lengthable = &Map[string, int]{}
 
 // NewOrderedMap creates a new ordered map
 func NewOrderedMap[K comparable, V any]() *OrderedMap[K, V] {
@@ -83,17 +79,12 @@ func (om *OrderedMap[K, V]) Append(key K, value V) bool {
 	return true
 }
 
-func (om *OrderedMap[K, V]) Iter() <-chan Pair[K, V] {
-	iterChan := make(chan Pair[K, V])
-	go func() {
-		for _, k := range om.order {
-			v := om.x[k]
-			iterChan <- NewPair[K, V](k, v)
-		}
-		close(iterChan)
-	}()
-	return iterChan
-}
+func (om *OrderedMap[K, V]) Iter() iterator.Iterable[Pair[K, V]] {
+	data := make([]Pair[K, V], len(om.order))
 
-var _ types.Iterable[Pair[string, int]] = &OrderedMap[string, int]{}
-var _ types.Lengthable = &OrderedMap[string, int]{}
+	for i, key := range om.order {
+		val, _ := om.Get(key)
+		data[i] = NewPair[K, V](key, val)
+	}
+	return NewList(data).Iter()
+}

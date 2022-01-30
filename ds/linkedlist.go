@@ -60,19 +60,19 @@ func (ll *LinkedList[T]) Get(index int) (T, bool) {
 	return n.val, true
 }
 
-func (ll *LinkedList[T]) Iter() <-chan T {
-	retChan := make(chan T)
-	go func() {
-		n := ll.head
-		for n != nil {
-			val := n.val
-			n = n.next
-			retChan <- val
-		}
-		close(retChan)
-	}()
-	return retChan
-}
+// func (ll *LinkedList[T]) Iter() <-chan T {
+// 	retChan := make(chan T)
+// 	go func() {
+// 		n := ll.head
+// 		for n != nil {
+// 			val := n.val
+// 			n = n.next
+// 			retChan <- val
+// 		}
+// 		close(retChan)
+// 	}()
+// 	return retChan
+// }
 
 func (ll LinkedList[T]) newNode(val T) *node[T] {
 	return &node[T]{
