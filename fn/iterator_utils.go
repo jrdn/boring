@@ -6,7 +6,7 @@ import (
 )
 
 // Collect gathers all the values from an iterable and converts it to a List
-func Collect[T any](iter ...types.Iterable[T]) *ds.List[T] {
+func Collect[T any](iter ...types.Iterator[T]) *ds.List[T] {
 	var ret []T
 	for item := range Chain(iter...).Iter() {
 		ret = append(ret, item)
@@ -86,7 +86,7 @@ func Reduce[T any](fn func(a, b T) T, data ...types.Iterable[T]) T {
 
 // Filter applies a function to an iterator and returns an iterable that contains only the values where the function
 // returns true
-func Filter[T any](fn func(T) bool, data ...types.Iterable[T]) types.Iterable[T] {
+func Filter[T any](fn func(T) bool, data ...types.Iterable[T]) types.Iterator[T] {
 	c := make(chan T)
 	go func() {
 		defer close(c)
@@ -101,7 +101,7 @@ func Filter[T any](fn func(T) bool, data ...types.Iterable[T]) types.Iterable[T]
 
 // Chain stitches together multiple iterators into one stream of values,
 // where the first iterator is consumed entirely, then the second, and so on
-func Chain[T any](iterables ...types.Iterable[T]) types.Iterable[T] {
+func Chain[T any](iterables ...types.Iterator[T]) types.Iterator[T] {
 	c := make(chan T)
 	go func() {
 		defer close(c)

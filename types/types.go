@@ -1,8 +1,17 @@
 package types
 
+import "context"
+
+type Generator[T any] func(ctx context.Context) chan T
+
+type Iterator[T any] interface {
+	Range() chan T
+	Close()
+}
+
 // Iterable is a type which implements the boring iterator protocol
 type Iterable[T any] interface {
-	Iter() <-chan T
+	Iter() Iterator[T]
 }
 
 type Lengthable interface {
