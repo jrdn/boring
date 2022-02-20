@@ -30,18 +30,6 @@ func (m Map[K, V]) Contains(key K) bool {
 	return ok
 }
 
-// Iter allows the Map to be an iface.Iterable
-func (m Map[K, V]) Iter() <-chan Pair[K, V] {
-	iterChan := make(chan Pair[K, V])
-	go func() {
-		for k, v := range m.x {
-			iterChan <- NewPair[K, V](k, v)
-		}
-		close(iterChan)
-	}()
-	return iterChan
-}
-
 // Get a value from the map
 func (m Map[K, V]) Get(key K) (V, bool) {
 	ret, ok := m.x[key]
@@ -57,7 +45,6 @@ func (m Map[K, V]) Len() int {
 	return len(m.x)
 }
 
-var _ types.Iterable[Pair[string, int]] = &Map[string, int]{}
 var _ types.Lengthable = &Map[string, int]{}
 
 // NewOrderedMap creates a new ordered map
@@ -83,17 +70,4 @@ func (om *OrderedMap[K, V]) Append(key K, value V) bool {
 	return true
 }
 
-func (om *OrderedMap[K, V]) Iter() <-chan Pair[K, V] {
-	iterChan := make(chan Pair[K, V])
-	go func() {
-		for _, k := range om.order {
-			v := om.x[k]
-			iterChan <- NewPair[K, V](k, v)
-		}
-		close(iterChan)
-	}()
-	return iterChan
-}
-
-var _ types.Iterable[Pair[string, int]] = &OrderedMap[string, int]{}
 var _ types.Lengthable = &OrderedMap[string, int]{}

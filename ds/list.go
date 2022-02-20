@@ -23,15 +23,3 @@ func (l *List[T]) Get(index int) T {
 func (l *List[T]) GetSlice() []T {
 	return l.x
 }
-
-// Iter allows the List to be an iface.Iterable
-func (l *List[T]) Iter() <-chan T {
-	iterChan := make(chan T)
-	go func() {
-		for _, item := range l.x {
-			iterChan <- item
-		}
-		close(iterChan)
-	}()
-	return iterChan
-}
