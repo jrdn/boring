@@ -17,7 +17,6 @@ type Config struct {
 }
 
 func SetupLogging(cfg Config) error {
-
 	encoderConfig := zap.NewProductionEncoderConfig()
 
 	if cfg.TZ == nil {
