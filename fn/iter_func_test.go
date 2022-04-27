@@ -1,6 +1,7 @@
 package fn
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -8,7 +9,7 @@ import (
 
 func TestFuncIterator(t *testing.T) {
 	counter := 0
-	result := Collect[int](FuncIterator[int](func() (int, bool) {
+	result := Collect[int](context.TODO(), FuncIterator[int](func() (int, bool) {
 		for counter < 10 {
 			val := counter
 			counter = counter + 1

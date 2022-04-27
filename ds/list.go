@@ -1,5 +1,7 @@
 package ds
 
+import "context"
+
 // NewList creates a new List, which is an iterable analogous to a slice
 func NewList[T any](data ...[]T) *List[T] {
 	l := &List[T]{}
@@ -25,12 +27,16 @@ func (l *List[T]) GetSlice() []T {
 }
 
 // Iter allows the List to be an iface.Iterable
-func (l *List[T]) Iter() <-chan T {
+func (l *List[T]) Iter(ctx context.Context) <-chan T {
 	iterChan := make(chan T)
 	go func() {
 		defer close(iterChan)
 		for _, item := range l.x {
-			iterChan <- item
+			select {
+			case <-ctx.Done():
+				return
+			case iterChan <- item:
+			}
 		}
 	}()
 	return iterChan

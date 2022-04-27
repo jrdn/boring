@@ -1,6 +1,8 @@
 package fn
 
 import (
+	"context"
+
 	"github.com/jrdn/boring/types"
 )
 
@@ -11,15 +13,18 @@ type IteratorFunc[T any] func() (retVal T, stopIteration bool)
 // iterate over the function results in this way while the 2nd return value
 // stays false.
 func FuncIterator[T any](fn IteratorFunc[T]) types.Iterable[T] {
-	return &fnIter[T]{fn: fn}
+	return &fnIter[T]{
+		fn: fn,
+	}
 }
 
 type fnIter[T any] struct {
-	fn func() (T, bool)
+	fn IteratorFunc[T]
 }
 
 // Iter iterates the function
-func (iter fnIter[T]) Iter() <-chan T {
+func (iter fnIter[T]) Iter(ctx context.Context) <-chan T {
+	// TODO check context
 	c := make(chan T)
 	go func() {
 		ret, stopIteration := iter.fn()

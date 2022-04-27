@@ -1,6 +1,8 @@
 package fn
 
 import (
+	"context"
+
 	"github.com/jrdn/boring/types"
 )
 
@@ -14,11 +16,15 @@ type chanIterator[T any] struct {
 }
 
 // Iter iterates the channel
-func (c *chanIterator[T]) Iter() <-chan T {
+func (c *chanIterator[T]) Iter(ctx context.Context) <-chan T {
 	retChan := make(chan T)
 	go func() {
 		for x := range c.c {
-			retChan <- x
+			select {
+			case <-ctx.Done():
+				return
+			case retChan <- x:
+			}
 		}
 		close(retChan)
 	}()

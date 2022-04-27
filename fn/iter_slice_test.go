@@ -1,6 +1,7 @@
 package fn
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,7 +11,7 @@ func TestSliceIterator(t *testing.T) {
 	expected := []string{"foo", "bar", "baz"}
 	iterable := SliceIterator[string](expected)
 
-	result := Collect(iterable).GetSlice()
+	result := Collect(context.TODO(), iterable).GetSlice()
 	assert.NotNil(t, result)
 	assert.NotEmpty(t, result)
 

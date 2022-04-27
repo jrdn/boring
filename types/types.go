@@ -1,8 +1,10 @@
 package types
 
+import "context"
+
 // Iterable is a type which implements the boring iterator protocol
 type Iterable[T any] interface {
-	Iter() <-chan T
+	Iter(ctx context.Context) <-chan T
 }
 
 type Lengthable interface {
