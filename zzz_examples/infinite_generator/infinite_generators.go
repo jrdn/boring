@@ -7,15 +7,14 @@ import (
 	"github.com/jrdn/boring/fn"
 )
 
-var counter int = 0
-
 func main() {
+	counter := 0
+
 	// genFunc is an iterator which produces counting up forever
 	// it would stop iterating by returning true fits second return value
-
 	genFunc := func() (int, bool) {
 		for {
-			counter = counter + 1
+			counter++
 			return counter, false // returning true stops iteration, but this should be infinite
 		}
 	}
@@ -33,13 +32,13 @@ func main() {
 
 	// Map over the values to double them
 	doubledIter := fn.Map[int, int](ctx, func(input int) int {
-		return input * 2
+		return input * 2 // nolint:gomnd
 	}, filteredIter)
 
 	// since the stream is infinite we can't just iterate over it,
 	// so collect items until they're > 40
 	collected := fn.CollectUntil(ctx, func(item int) bool {
-		return item > 40
+		return item > 40 // nolint:gomnd
 	}, doubledIter)
 
 	// reduce to the sum of the collection

@@ -22,18 +22,26 @@ type fnIter[T any] struct {
 	fn IteratorFunc[T]
 }
 
-// Iter iterates the function
+// Iter iterates the function.
 func (iter fnIter[T]) Iter(ctx context.Context) <-chan T {
-	// TODO check context
 	c := make(chan T)
+
 	go func() {
-		ret, stopIteration := iter.fn()
-		c <- ret
+		defer close(c)
+
+		stopIteration := false
+		ctxDone := ctx.Done()
+
 		for !stopIteration {
-			ret, stopIteration = iter.fn()
-			c <- ret
+			select {
+			case <-ctxDone:
+				return
+			default:
+				var ret T
+				ret, stopIteration = iter.fn()
+				c <- ret
+			}
 		}
-		close(c)
 	}()
 
 	return c

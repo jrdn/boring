@@ -32,8 +32,6 @@ func (rw *responseWriter) WriteHeader(code int) {
 	rw.status = code
 	rw.ResponseWriter.WriteHeader(code)
 	rw.wroteHeader = true
-
-	return
 }
 
 // LoggingMiddleware logs the incoming HTTP request & its duration.

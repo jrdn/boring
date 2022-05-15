@@ -7,7 +7,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-var rootLogger *zap.Logger
+var rootLogger *zap.Logger // nolint:gochecknoglobals
 
 type Config struct {
 	Level       string
@@ -17,12 +17,12 @@ type Config struct {
 }
 
 func SetupLogging(cfg Config) error {
-
 	encoderConfig := zap.NewProductionEncoderConfig()
 
 	if cfg.TZ == nil {
 		cfg.TZ = time.UTC
 	}
+
 	rfc3339EncodingInLocation := func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 		zapcore.RFC3339NanoTimeEncoder(t.In(cfg.TZ), enc)
 	}
@@ -58,6 +58,7 @@ func SetupLogging(cfg Config) error {
 	}
 
 	rootLogger = l
+
 	return nil
 }
 
@@ -66,7 +67,6 @@ func GetRootLogger() *zap.Logger {
 }
 
 func GetLogger(name string) *zap.Logger {
-	rootLogger.WithOptions()
 	return rootLogger.Named(name)
 }
 

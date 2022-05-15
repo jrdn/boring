@@ -1,0 +1,14 @@
+---
+kind: pipeline
+type: docker
+name: local dev
+
+steps:
+  - name: test
+    image: golang:1.18
+    commands:
+      - go test ./...
+  - name: lint
+    image: golangci/golangci-lint:v1.46.1
+    commands:
+      - golangci-lint run

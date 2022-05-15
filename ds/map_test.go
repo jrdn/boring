@@ -22,16 +22,16 @@ func TestMap_Contains(t *testing.T) {
 }
 
 func TestMap_Iter(t *testing.T) {
-	m := NewMap[string, string](map[string]string{"foo": "bar", "baz": "quux"})
-	var iter types.Iterable[Pair[string, string]] = m
+	var iter types.Iterable[Pair[string, string]] = NewMap[string, string](map[string]string{"foo": "bar", "baz": "quux"})
+
 	for item := range iter.Iter(context.Background()) {
 		fmt.Println(item)
 	}
 }
 
-type testComparable struct {
-	val int
-}
+// type testComparable struct {
+// 	val int
+// }
 
 // func TestNewOrderedMap(t *testing.T) {
 // 	expected := []Pair[testComparable, int]{

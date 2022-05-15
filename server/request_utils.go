@@ -8,7 +8,8 @@ import (
 func JSONResponse(status int, val any, w http.ResponseWriter) {
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(status)
-	out, _ := json.Marshal(val)
+
+	out, _ := json.Marshal(val) // nolint:errchkjson
 	_, _ = w.Write(out)
 }
 

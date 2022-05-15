@@ -12,7 +12,7 @@ func TestFuncIterator(t *testing.T) {
 	result := Collect[int](context.TODO(), FuncIterator[int](func() (int, bool) {
 		for counter < 10 {
 			val := counter
-			counter = counter + 1
+			counter++
 			return val, false
 		}
 		return 10, true

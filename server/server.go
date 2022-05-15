@@ -26,7 +26,7 @@ func New(listen string, serverLogger *zap.Logger, requestLogger *zap.Logger) *Se
 	}
 
 	server := &Server{
-		HttpServer:    srv,
+		HTTPServer:    srv,
 		Logger:        serverLogger,
 		RequestLogger: requestLogger,
 		Router:        chi.NewRouter(),
@@ -38,7 +38,7 @@ func New(listen string, serverLogger *zap.Logger, requestLogger *zap.Logger) *Se
 }
 
 type Server struct {
-	HttpServer    *http.Server
+	HTTPServer    *http.Server
 	StopCallback  func(*zap.Logger)
 	Logger        *zap.Logger
 	RequestLogger *zap.Logger
@@ -54,14 +54,15 @@ func (s *Server) Middleware(middleware func(http.Handler) http.Handler) {
 }
 
 func (s *Server) Run() {
-	s.HttpServer.Handler = s.Router
+	s.HTTPServer.Handler = s.Router
 
 	go func() {
-		_ = s.HttpServer.ListenAndServe()
+		_ = s.HTTPServer.ListenAndServe()
 	}()
 
 	sig.WaitUntilSignalled()
-	_ = s.HttpServer.Shutdown(context.Background())
+
+	_ = s.HTTPServer.Shutdown(context.Background())
 
 	if s.StopCallback != nil {
 		s.StopCallback(s.Logger)

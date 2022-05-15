@@ -16,6 +16,7 @@ func TestCollect(t *testing.T) {
 
 	require.NotNil(t, result)
 	require.NotEmpty(t, result)
+
 	for i, r := range result.GetSlice() {
 		assert.Equal(t, input[i], r)
 	}
@@ -124,10 +125,10 @@ func TestZip(t *testing.T) {
 	first := ds.NewList[string]([]string{"foo", "baz"})
 	second := ds.NewList[string]([]string{"bar", "quux", "hello world"})
 	i := 0
+
 	for pair := range Zip[string, string](ctx, first, second).Iter(ctx) {
 		assert.Equal(t, expected[i][0], pair.First())
 		assert.Equal(t, expected[i][1], pair.Second())
 		i++
 	}
-
 }

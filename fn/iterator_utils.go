@@ -7,56 +7,60 @@ import (
 	"github.com/jrdn/boring/types"
 )
 
-// CollectCtx gathers all the values from an iterable and converts it to a List
-// with a user-supplied context
+// Collect gathers all the values from an iterable and converts it to a List
+// with a user-supplied context.
 func Collect[T any](ctx context.Context, iter ...types.Iterable[T]) *ds.List[T] {
-	var ret []T
+	var ret []T // nolint:prealloc
 	for item := range Chain(ctx, iter...).Iter(ctx) {
 		ret = append(ret, item)
 	}
+
 	return ds.NewList[T](ret)
 }
 
-// CollectN gathers the first N values from an iterable and adds it to a List until the list contains
+// CollectN gathers the first N values from an iterable and adds it to a List until the list contains.
 func CollectN[T any](ctx context.Context, n int, iter ...types.Iterable[T]) *ds.List[T] {
-	var ret []T
+	// var ret []T
+	ret := make([]T, n)
 
-	counter := 0
-	for item := range Chain(ctx, iter...).Iter(ctx) {
-		ret = append(ret, item)
-		counter += 1
-		if counter == n {
-			break
-		}
+	iterator := Chain(ctx, iter...).Iter(ctx)
+	for i := 0; i < n; i++ {
+		ret[i] = <-iterator
 	}
+
 	return ds.NewList[T](ret)
 }
 
 type CollectUntilDecider[T any] func(item T) (stopIteration bool)
 
-// CollectUntil gathers values from iterables into a List until a provided function returns true
+// CollectUntil gathers values from iterables into a List until a provided function returns true.
 func CollectUntil[T any](ctx context.Context, fn CollectUntilDecider[T], iter ...types.Iterable[T]) *ds.List[T] {
-	var ret []T
+	var ret []T // nolint:prealloc
+
 	for item := range Chain(ctx, iter...).Iter(ctx) {
 		if stopIteration := fn(item); stopIteration {
 			break
 		}
+
 		ret = append(ret, item)
 	}
+
 	return ds.NewList[T](ret)
 }
 
-// Map applies a function to a number of iterators and produces an iterable of the function's return values
+// Map applies a function to a number of iterators and produces an iterable of the function's return values.
 func Map[T, R any](ctx context.Context, fn func(T) R, iterators ...types.Iterable[T]) types.Iterable[R] {
 	c := make(chan R)
 
 	go func() {
 		defer close(c)
+
 		chain := Chain[T](ctx, iterators...)
 		for item := range chain.Iter(ctx) {
 			c <- fn(item)
 		}
 	}()
+
 	return ChanIterator(c)
 }
 
@@ -68,57 +72,67 @@ func Map[T, R any](ctx context.Context, fn func(T) R, iterators ...types.Iterabl
 // would be result in ((1+2)+3)
 //
 // this implies that the iterable must return at least two items for the function to be called.
-// reducing an iterable that only returns one value results in that value, regardless of the function
+// reducing an iterable that only returns one value results in that value, regardless of the function.
 func Reduce[T any](ctx context.Context, fn func(a, b T) T, data ...types.Iterable[T]) T {
-	buf := make([]T, 2)
+	buf := make([]T, 2) // nolint:gomnd
 	i := 0
+
 	for item := range Chain(ctx, data...).Iter(ctx) {
 		// need to initialize buf with the first two elements
 		switch i {
 		case 0:
-			i += 1
+			i++
+
 			buf[0] = item
 		default:
-			i += 1
+			i++
+
 			buf[1] = item
 			buf[0] = fn(buf[0], buf[1])
 		}
 	}
+
 	return buf[0]
 }
 
 // Filter applies a function to an iterator and returns an iterable that contains only the values where the function
-// returns true
+// returns true.
 func Filter[T any](ctx context.Context, fn func(T) bool, data ...types.Iterable[T]) types.Iterable[T] {
 	c := make(chan T)
+
 	go func() {
 		defer close(c)
+
 		for item := range Chain(ctx, data...).Iter(ctx) {
 			if fn(item) {
 				c <- item
 			}
 		}
 	}()
+
 	return ChanIterator[T](c)
 }
 
 // Chain stitches together multiple iterators into one stream of values,
-// where the first iterator is consumed entirely, then the second, and so on
+// where the first iterator is consumed entirely, then the second, and so on.
 func Chain[T any](ctx context.Context, iterables ...types.Iterable[T]) types.Iterable[T] {
 	c := make(chan T)
+
 	go func() {
 		defer close(c)
+
 		for _, iterable := range iterables {
 			for item := range iterable.Iter(ctx) {
 				c <- item
 			}
 		}
 	}()
+
 	return ChanIterator[T](c)
 }
 
 // Tee makes two iterators which operate together, so an item must be read from both before either progresses to the
-// next item
+// next item.
 func Tee[T any](ctx context.Context, iter types.Iterable[T]) (types.Iterable[T], types.Iterable[T]) {
 	chan1 := make(chan T)
 	chan2 := make(chan T)
@@ -126,6 +140,7 @@ func Tee[T any](ctx context.Context, iter types.Iterable[T]) (types.Iterable[T],
 	go func() {
 		defer close(chan1)
 		defer close(chan2)
+
 		for item := range iter.Iter(ctx) {
 			chan1 <- item
 			chan2 <- item
@@ -135,21 +150,23 @@ func Tee[T any](ctx context.Context, iter types.Iterable[T]) (types.Iterable[T],
 	return ChanIterator[T](chan1), ChanIterator[T](chan2)
 }
 
-// Repeat a value infinitely
+// Repeat a value infinitely.
 func Repeat[T any](element T) types.Iterable[T] {
 	return FuncIterator(func() (T, bool) {
 		return element, false
 	})
 }
 
-// RepeatTimes repeats a value a given number of times
+// RepeatTimes repeats a value a given number of times.
 func RepeatTimes[T any](element T, times int) types.Iterable[T] {
 	counter := 0
+
 	return FuncIterator(func() (T, bool) {
 		if counter < times-1 {
 			counter++
 			return element, false
 		}
+
 		counter++
 		return element, true
 	})
@@ -161,14 +178,17 @@ func Zip[A, B any](ctx context.Context, a types.Iterable[A], b types.Iterable[B]
 	result := make(chan ds.Pair[A, B])
 	aIter := a.Iter(ctx)
 	bIter := b.Iter(ctx)
-	// TODO well this will leak a goroutine every time the iterators are of unequal length
+
+	// TODO this will leak a goroutine every time the iterators are of unequal length... not ideal
 	go func() {
 		defer close(result)
+
 		for {
 			x, ok := <-aIter
 			if !ok {
 				break
 			}
+
 			y, ok := <-bIter
 			if !ok {
 				break
@@ -176,10 +196,11 @@ func Zip[A, B any](ctx context.Context, a types.Iterable[A], b types.Iterable[B]
 			result <- ds.NewPair[A, B](x, y)
 		}
 	}()
+
 	return ChanIterator[ds.Pair[A, B]](result)
 }
 
-// Pairwise consumes an iterator and returns them two at a times
+// Pairwise consumes an iterator and returns them two at a times.
 func Pairwise[T any](ctx context.Context, iter types.Iterable[T]) types.Iterable[ds.Pair[T, T]] {
 	iterChan := make(chan ds.Pair[T, T])
 
@@ -187,6 +208,7 @@ func Pairwise[T any](ctx context.Context, iter types.Iterable[T]) types.Iterable
 
 	go func() {
 		defer close(iterChan)
+
 		for {
 			first, more := <-source
 			if !more {

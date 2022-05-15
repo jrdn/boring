@@ -11,7 +11,6 @@ func TestNewPair(t *testing.T) {
 	pair := NewPair[string, string]("foo", "bar")
 	assert.Equal(t, "foo", pair.First())
 	assert.Equal(t, "bar", pair.Second())
-
 }
 
 func TestNewTriplet(t *testing.T) {
