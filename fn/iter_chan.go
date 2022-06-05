@@ -20,6 +20,8 @@ func (c *chanIterator[T]) Iter(ctx context.Context) <-chan T {
 	retChan := make(chan T)
 
 	go func() {
+		defer close(retChan)
+
 		for x := range c.c {
 			select {
 			case <-ctx.Done():
@@ -27,8 +29,6 @@ func (c *chanIterator[T]) Iter(ctx context.Context) <-chan T {
 			case retChan <- x:
 			}
 		}
-
-		close(retChan)
 	}()
 
 	return retChan

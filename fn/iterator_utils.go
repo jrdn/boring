@@ -22,10 +22,15 @@ func Collect[T any](ctx context.Context, iter ...types.Iterable[T]) *ds.List[T] 
 func CollectN[T any](ctx context.Context, n int, iter ...types.Iterable[T]) *ds.List[T] {
 	// var ret []T
 	ret := make([]T, n)
-
+	done := ctx.Done()
 	iterator := Chain(ctx, iter...).Iter(ctx)
+
 	for i := 0; i < n; i++ {
-		ret[i] = <-iterator
+		select {
+		case <-done:
+			return nil
+		case ret[i] = <-iterator:
+		}
 	}
 
 	return ds.NewList[T](ret)
@@ -56,8 +61,14 @@ func Map[T, R any](ctx context.Context, fn func(T) R, iterators ...types.Iterabl
 		defer close(c)
 
 		chain := Chain[T](ctx, iterators...)
+		done := ctx.Done()
+
 		for item := range chain.Iter(ctx) {
-			c <- fn(item)
+			select {
+			case <-done:
+				return
+			case c <- fn(item):
+			}
 		}
 	}()
 
@@ -103,9 +114,15 @@ func Filter[T any](ctx context.Context, fn func(T) bool, data ...types.Iterable[
 	go func() {
 		defer close(c)
 
+		done := ctx.Done()
+
 		for item := range Chain(ctx, data...).Iter(ctx) {
 			if fn(item) {
-				c <- item
+				select {
+				case <-done:
+					return
+				case c <- item:
+				}
 			}
 		}
 	}()
@@ -121,9 +138,15 @@ func Chain[T any](ctx context.Context, iterables ...types.Iterable[T]) types.Ite
 	go func() {
 		defer close(c)
 
+		done := ctx.Done()
+
 		for _, iterable := range iterables {
 			for item := range iterable.Iter(ctx) {
-				c <- item
+				select {
+				case <-done:
+					return
+				case c <- item:
+				}
 			}
 		}
 	}()
@@ -140,6 +163,8 @@ func Tee[T any](ctx context.Context, iter types.Iterable[T]) (types.Iterable[T],
 	go func() {
 		defer close(chan1)
 		defer close(chan2)
+
+		// TODO context
 
 		for item := range iter.Iter(ctx) {
 			chan1 <- item
@@ -183,6 +208,8 @@ func Zip[A, B any](ctx context.Context, a types.Iterable[A], b types.Iterable[B]
 	go func() {
 		defer close(result)
 
+		// TODO context
+
 		for {
 			x, ok := <-aIter
 			if !ok {
@@ -208,6 +235,8 @@ func Pairwise[T any](ctx context.Context, iter types.Iterable[T]) types.Iterable
 
 	go func() {
 		defer close(iterChan)
+
+		// TODO context
 
 		for {
 			first, more := <-source

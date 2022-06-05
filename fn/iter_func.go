@@ -33,13 +33,13 @@ func (iter fnIter[T]) Iter(ctx context.Context) <-chan T {
 		ctxDone := ctx.Done()
 
 		for !stopIteration {
+			var ret T
+			ret, stopIteration = iter.fn()
+
 			select {
 			case <-ctxDone:
 				return
-			default:
-				var ret T
-				ret, stopIteration = iter.fn()
-				c <- ret
+			case c <- ret:
 			}
 		}
 	}()
